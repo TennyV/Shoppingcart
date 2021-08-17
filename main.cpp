@@ -1,80 +1,213 @@
-#include<iostream>
-#include<string>
-#include "ItemToPurchase.h"
+#include <Python.h>
+#include <iostream>
+#include <Windows.h>
+#include <cmath>
+#include <string>
+#include <fstream>
+#include <iomanip>
 
 using namespace std;
 
-int main()
-
+/*
+Description:
+To call this function, simply pass the function name in Python that you wish to call.
+Example:
+callProcedure("printsomething");
+Output:
+Python will print on the screen: Hello from python!
+Return:
+None
+*/
+void CallProcedure(string pName)
 {
-     ItemToPurchase firstItem, secondItem;  // object in class
+	char* procname = new char[pName.length() + 1];
+	std::strcpy(procname, pName.c_str());
 
-     string itemName;
+	Py_Initialize();
+	PyObject* my_module = PyImport_ImportModule("CS210_Starter_PY_Code");
+	PyErr_Print();
+	PyObject* my_function = PyObject_GetAttrString(my_module, procname);
+	PyObject* my_result = PyObject_CallObject(my_function, NULL);
+	Py_Finalize();
 
-     int itemPrice;    // types of integers for today's lab
-
-     int itemQuantity;
-
-     int totalCost;
-
-     cout << "Item 1:" << endl;
-
-     cout << "Enter the item name : " << endl;   // first two things that pop up on screen
-
-     getline(cin, itemName);   // taking input of the line
-
-     cout << "Enter the item price : " << endl;    //display
-
-     cin >> itemPrice;   // input of price
-
-     cout << "Enter the item quantity : " << endl;  // display
-
-     cin >> itemQuantity;
-
-     firstItem.SetName(itemName);
-
-     firstItem.SetPrice(itemPrice);
-
-     firstItem.SetQuantity(itemQuantity);
-
-     cin.ignore();
-
-     cout << endl;
-
-     cout << "Item 2:" << endl;
-
-     cout << "Enter the item name : " << endl;
-
-     getline(cin, itemName);
-
-     cout << "Enter the item price : " << endl;
-
-     cin >> itemPrice;
-
-     cout << "Enter the item quantity : " << endl;
-
-     cin >> itemQuantity;
-
-     secondItem.SetName(itemName);
-
-     secondItem.SetPrice(itemPrice);
-
-     secondItem.SetQuantity(itemQuantity);
-
-    // output
-
-     cout << "TOTAL COST : " << endl;
-
-     cout << firstItem.GetName() << " " << firstItem.GetQuantity() << " @ $" << firstItem.GetPrice() << " = " << (firstItem.GetQuantity()*firstItem.GetPrice()) << endl;
-
-     cout << secondItem.GetName() << " " << secondItem.GetQuantity() << " @ $" << secondItem.GetPrice() << " = " << (secondItem.GetQuantity()*secondItem.GetPrice()) << endl;
-
-     totalCost = (firstItem.GetQuantity()*firstItem.GetPrice()) + (secondItem.GetQuantity()*secondItem.GetPrice());
-
-     cout << endl;
-
-     cout << "Total : $" << totalCost << endl;
-
-     return 0;
-
+	delete[] procname;
 }
+
+/*
+Description:
+To call this function, pass the name of the Python functino you wish to call and the string parameter you want to send
+Example:
+int x = callIntFunc("PrintMe","Test");
+Output:
+Python will print on the screen:
+You sent me: Test
+Return:
+100 is returned to the C++
+*/
+int callIntFunc(string proc, string param)
+{
+	char* procname = new char[proc.length() + 1];
+	std::strcpy(procname, proc.c_str());
+
+	char* paramval = new char[param.length() + 1];
+	std::strcpy(paramval, param.c_str());
+
+
+	PyObject* pName, * pModule, * pDict, * pFunc, * pValue = nullptr, * presult = nullptr;
+	// Initialize the Python Interpreter
+	Py_Initialize();
+	// Build the name object
+	pName = PyUnicode_FromString((char*)"CS210_Starter_PY_Code");
+	// Load the module object
+	pModule = PyImport_Import(pName);
+	// pDict is a borrowed reference
+	pDict = PyModule_GetDict(pModule);
+	// pFunc is also a borrowed reference
+	pFunc = PyDict_GetItemString(pDict, procname);
+	if (PyCallable_Check(pFunc))
+	{
+		pValue = Py_BuildValue("(z)", paramval);
+		PyErr_Print();
+		presult = PyObject_CallObject(pFunc, pValue);
+		PyErr_Print();
+	}
+	else
+	{
+		PyErr_Print();
+	}
+	//printf("Result is %d\n", _PyLong_AsInt(presult));
+Py_DECREF(pValue);
+// Clean up
+Py_DECREF(pModule);
+Py_DECREF(pName);
+// Finish the Python Interpreter
+Py_Finalize();
+
+// clean
+delete[] procname;
+delete[] paramval;
+
+
+return _PyLong_AsInt(presult);
+}
+
+/*
+Description:
+To call this function, pass the name of the Python functino you wish to call and the string parameter you want to send
+Example:
+int x = callIntFunc("doublevalue",5);
+Return:
+25 is returned to the C++
+*/
+int callIntFunc(string proc, int param)
+{
+	char* procname = new char[proc.length() + 1];
+	std::strcpy(procname, proc.c_str());
+
+	PyObject* pName, * pModule, * pDict, * pFunc, * pValue = nullptr, * presult = nullptr;
+	// Initialize the Python Interpreter
+	Py_Initialize();
+	// Build the name object
+	pName = PyUnicode_FromString((char*)"CS210_Starter_PY_Code");
+	// Load the module object
+	pModule = PyImport_Import(pName);
+	// pDict is a borrowed reference
+	pDict = PyModule_GetDict(pModule);
+	// pFunc is also a borrowed reference
+	pFunc = PyDict_GetItemString(pDict, procname);
+	if (PyCallable_Check(pFunc))
+	{
+		pValue = Py_BuildValue("(i)", param);
+		PyErr_Print();
+		presult = PyObject_CallObject(pFunc, pValue);
+		PyErr_Print();
+	}
+	else
+	{
+		PyErr_Print();
+	}
+	//printf("Result is %d\n", _PyLong_AsInt(presult));
+	Py_DECREF(pValue);
+	// Clean up
+	Py_DECREF(pModule);
+	Py_DECREF(pName);
+	// Finish the Python Interpreter
+	Py_Finalize();
+
+	// clean
+	delete[] procname;
+
+	return _PyLong_AsInt(presult);
+}
+
+
+int main()
+{
+
+	string num1;
+	int choice;
+	string printH;
+	ifstream inFS("frequency.dat");
+	string itemName;
+	int itemQuantity;
+
+
+
+	do {
+		cout << "\n1: Create a list of all items purchased with quantities" << endl;
+		cout << "2: Create a number of how many times an item was purchased" << endl;
+		cout << "3: Create a histogram of all items purchased in a day" << endl;
+		cout << "Enter your selection as a number 1, 2, 3, or 4 to exit." << endl;
+		cin >> choice;   // accepting user input
+		switch (choice)
+		{
+		case 1:
+			CallProcedure("ReadFile");  // pulling python function
+			break;
+		case 2:
+			cout << "Select an item from the list, please select following option for list of items" << endl;
+			cin >> num1;  // user input
+
+			num1[0] = toupper(num1[0]);  // fixes user input to have first letter capitalized
+			cout << callIntFunc("ItemCount", num1);  // utilizes function and takes userinput
+			break;
+		case 3:
+
+			CallProcedure("Histogram");  // pulls from function
+
+			inFS.open("frequency.dat");        //Open frequency.dat
+
+			if (inFS.is_open())  // test condition to see file is open
+			{
+				cout << "File is good to read!\n press option three again" << endl;
+
+				while ((getline(inFS, itemName, ' ') && (inFS >> itemQuantity))) 
+				{
+					cout << itemName << " "; // prints(myfile, first item line with space in between
+				
+
+					for (int i = 0; i < itemQuantity; i++)  // loop to get histogram
+					{
+						cout << "*";
+					}
+					cout << endl;
+				}
+				{		
+				}
+				inFS.close();   // closing the file
+
+				break;
+
+		case 4:
+			cout << "Exiting program" << endl;
+			exit(3);
+			return 3;  // exits program
+		default:
+			cout << "Invalid selection" << endl;   // telling the user they selected a wrong input
+			break;
+			}
+		}
+		} while (choice > 0 || choice <= 3);
+		// validates user input
+		return 0;
+	}
